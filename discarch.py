@@ -56,11 +56,11 @@ def notify_slack_route():
             return msg
         logging.debug("Trynna unroll thread with thread_ts: {}".format(
             request.json['event']['thread_ts']))
-        logging.debug(app.discarch_config['client'].conversations_replies(
+        convoreps = app.discarch_config['client'].conversations_replies(
             token=app.discarch_config['token'],
             channel=request.json['event']['channel'],
             ts=request.json['event']['thread_ts'])
-        )
+        logging.debug(prettyjson(convoreps))
 
     msg = "Unhandled condition at path {}. Request data json: {}".format(
         request.path, prettyjson(request.json))
