@@ -62,6 +62,8 @@ def notify_slack_route():
             ts=request.json['event']['thread_ts'])
         inspect("convoreps", convoreps)
         inspect("convoreps.data", convoreps.data)
+        logging.debug(prettyjson(convoreps.data))
+        return "OK"
 
     msg = "Unhandled condition at path {}. Request data json: {}".format(
         request.path, prettyjson(request.json))
