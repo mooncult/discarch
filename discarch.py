@@ -37,6 +37,7 @@ def log_request_info():
 def notify_slack_route():
     inspect("req", request)
     inspect("path", request.path)
+    inspect("data", request.json)
     data = request.json
     response = data['challenge']
     return(response)
