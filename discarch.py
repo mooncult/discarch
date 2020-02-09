@@ -18,7 +18,7 @@ def log_request_info():
     app.logger.info('Body: %s', request.form.to_dict())
 
 
-@app.route('/discarch/mention', methods=['post'])
+@app.route('/discarch/mention', methods=['POST'])
 def notify_slack_route():
     data = request.json()
     response = data.challenge
