@@ -2,12 +2,14 @@
 """This is a app
 """
 
+import argparse
 import os
 import json
 import logging
-import requests
 import pdb
+import sys
 
+import requests
 import slack
 from flask import Flask
 from flask import request
@@ -54,8 +56,8 @@ def notify_slack_route():
             return msg
         logging.debug("Trynna unroll thread with thread_ts: {}".format(
             request.json['event']['thread_ts']))
-        logging.debug(CLIENT.conversations_replies(
-            token=TOKEN,
+        logging.debug(app.discarch_config['client'].conversations_replies(
+            token=app.discarch_config['token'],
             channel=request.json['event']['channel'],
             ts=request.json['event']['thread_ts'])
         )
@@ -66,7 +68,24 @@ def notify_slack_route():
     return msg
 
 
+def main(*args, **kwargs):
+    """Main program entrypoint
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--token", "-t", default=os.environ.get('SLACK_BOT_TOKEN'))
+    parser.add_argument("--bindhost", "-b", default="0.0.0.0")
+    parser.add_argument("--port", "-p", default="8080")
+    parser.add_argument("--debug", "-d", action="store_true")
+    parsed = parser.parse_args()
+    if not parsed.token:
+        raise Exception("You're going to need a token bruh")
+    client = slack.WebClient(parsed.token)
+    app.discarch_config = {
+        'token': parsed.token,
+        'client': client,
+    }
+    app.run(host=parsed.bindhost, port=parsed.port, debug=parsed.debug)
+
+
 if __name__ == '__main__':
-    TOKEN = os.environ['SLACK_BOT_TOKEN']
-    CLIENT = slack.WebClient(TOKEN)    
-    app.run(host='0.0.0.0', port='8080', debug=True)
+    sys.exit(main(*sys.argv))
