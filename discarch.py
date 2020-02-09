@@ -1,11 +1,26 @@
-from flask import Flask
-from flask import request
+#!/usr/bin/env python3
+"""This is a app
+"""
+
 import os
 import json
+import logging
 import requests
 import pdb
 
+from flask import Flask
+from flask import request
+
+
+logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
+
+
+def inspect(something):
+    logging.debug("Type: {}".format(type(something)))
+    logging.debug("Dir: {}".format(dir(something)))
+    logging.debug("Value: {}".format(something))
+
 
 @app.route('/')
 def index():
@@ -20,6 +35,7 @@ def log_request_info():
 
 @app.route('/discarch/mention', methods=['POST'])
 def notify_slack_route():
+    inspect(request)
     data = request.json
     response = data['challenge']
     return(response)
