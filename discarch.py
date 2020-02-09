@@ -42,9 +42,8 @@ def notify_slack_route():
     inspect("req", request)
     inspect("path", request.path)
     logging.debug("JSON object at request.json: {}".format(prettyjson(request.json)))
-    data = request.json
-    response = data['challenge']
-    return(response)
+    if 'challenge' in request.json:
+        return request.json['challenge']
 
 
 if __name__ == '__main__':
