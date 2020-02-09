@@ -24,7 +24,7 @@ def log_request_info():
     app.logger.info('Body: %s', request.form.to_dict())
 
 
-@app.route('/disarch/mention', methods=['post'])
+@app.route('/discarch/mention', methods=['post'])
 def notify_slack_route():
     post_json = request.form.to_dict(flat=False)
     # this houses the json dict
