@@ -37,9 +37,11 @@ def handle_messages(**payload):
     channel_id = data['channel']
     thread_ts = data['ts']
 
+    LOGGER.debug(payload)
+
     if not data['text'].startswith("MOONRITUAL"):
         return
-    response = "🧞‍♀️"
+    response = "🧞"
 
     webclient = payload['web_client']
     webclient.chat_postMessage(
@@ -55,12 +57,14 @@ def main(*args, **kwargs):
     parser.add_argument(
         "--debug", "-d", action='store_true',
         help="Include debugging output")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Include verbose logs")
     parser.add_argument(
         "--api-token", "-t", required=True, help="Slack API token")
     parsed = parser.parse_args()
+    if parsed.verbose or parsed.debug:
+        LOGGER.setLevel(logging.DEBUG)
     if parsed.debug:
         sys.excepthook = idb_excepthook
-        LOGGER.setLevel(logging.DEBUG)
 
     rtm_client = slack.RTMClient(token=parsed.api_token)
     rtm_client.start()
