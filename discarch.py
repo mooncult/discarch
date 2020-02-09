@@ -54,7 +54,7 @@ def notify_slack_route():
             return msg
         logging.debug("Trynna unroll thread with thread_ts: {}".format(
             request.json['event']['thread_ts']))
-        logging.debug(CLIENT.conversations.replies(
+        logging.debug(CLIENT.conversations_replies(
             token=TOKEN,
             channel=request.json['event']['channel'],
             ts=request.json['event']['thread_ts'])
