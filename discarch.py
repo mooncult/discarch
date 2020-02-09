@@ -44,6 +44,12 @@ def notify_slack_route():
     logging.debug("JSON object at request.json: {}".format(prettyjson(request.json)))
     if 'challenge' in request.json:
         return request.json['challenge']
+    elif 'event' in request.json and request.json['event']['type'] == 'app_mention':
+        logging.debug("I think this is the event you get when you get app mentioned")
+        logging.debug(request.json['event']['text'])
+
+    return "Unhandled condition at path {}. Request data json: {}".format(
+        request.path, prettyjson(request.json))
 
 
 if __name__ == '__main__':
