@@ -16,6 +16,10 @@ logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 
 
+def prettyjson(obj):
+    return json.dumps(obj, indent=2, sort_keys=True)
+
+
 def inspect(title, something):
     logging.debug("<{}> Type: {}".format(title, type(something)))
     logging.debug("<{}> Dir: {}".format(title, dir(something)))
@@ -37,7 +41,7 @@ def log_request_info():
 def notify_slack_route():
     inspect("req", request)
     inspect("path", request.path)
-    inspect("data", request.json)
+    logging.debug("JSON object at request.json: {}".format(prettyjson(request.json)))
     data = request.json
     response = data['challenge']
     return(response)
