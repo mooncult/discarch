@@ -8,6 +8,7 @@ import logging
 import requests
 import pdb
 
+import slack
 from flask import Flask
 from flask import request
 
@@ -53,6 +54,11 @@ def notify_slack_route():
             return msg
         logging.debug("Trynna unroll thread with thread_ts: {}".format(
             request.json['event']['thread_ts']))
+        logging.debug(CLIENT.conversations.replies(
+            token=TOKEN,
+            channel=request.json['event']['channel'],
+            ts=request.json['event']['thread_ts'])
+        )
 
     msg = "Unhandled condition at path {}. Request data json: {}".format(
         request.path, prettyjson(request.json))
@@ -61,4 +67,6 @@ def notify_slack_route():
 
 
 if __name__ == '__main__':
+    TOKEN = os.environ['SLACK_BOT_TOKEN']
+    CLIENT = slack.WebClient(TOKEN)    
     app.run(host='0.0.0.0', port='8080', debug=True)
