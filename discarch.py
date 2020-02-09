@@ -16,10 +16,10 @@ logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 
 
-def inspect(something):
-    logging.debug("Type: {}".format(type(something)))
-    logging.debug("Dir: {}".format(dir(something)))
-    logging.debug("Value: {}".format(something))
+def inspect(title, something):
+    logging.debug("<{}> Type: {}".format(title, type(something)))
+    logging.debug("<{}> Dir: {}".format(title, dir(something)))
+    logging.debug("<{}> Value: {}".format(title, something))
 
 
 @app.route('/')
@@ -35,7 +35,8 @@ def log_request_info():
 
 @app.route('/discarch/mention', methods=['POST'])
 def notify_slack_route():
-    inspect(request)
+    inspect("req", request)
+    inspect("path", request.path)
     data = request.json
     response = data['challenge']
     return(response)
