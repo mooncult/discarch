@@ -47,9 +47,17 @@ def notify_slack_route():
     elif 'event' in request.json and request.json['event']['type'] == 'app_mention':
         logging.debug("I think this is the event you get when you get app mentioned")
         logging.debug(request.json['event']['text'])
+        if 'thread_ts' not in request.json['event']:
+            msg = "Got my @ss @'d outside of a thread, no one cares lol"
+            logging.info(msg)
+            return msg
+        logging.debug("Trynna unroll thread with thread_ts: {}".format(
+            request.json['event']['thread_ts']))
 
-    return "Unhandled condition at path {}. Request data json: {}".format(
+    msg = "Unhandled condition at path {}. Request data json: {}".format(
         request.path, prettyjson(request.json))
+    logging.debug(msg)
+    return msg
 
 
 if __name__ == '__main__':
