@@ -1,74 +1,63 @@
-#!/usr/bin/env python3
+from flask import Flask
+from flask import request
+import os
+import json
+import requests
+import pdb
 
-import argparse
-import logging
-import sys
-
-import slack
-
-
-logging.basicConfig(level=logging.INFO)
-LOGGER = logging.getLogger(__name__)
+app = Flask(__name__)
 
 
-def idb_excepthook(type, value, tb):
-    """Call an interactive debugger in post-mortem mode
-
-    If you do "sys.excepthook = idb_excepthook", then an interactive debugger
-    will be spawned at an unhandled exception
-    """
-    if hasattr(sys, 'ps1') or not sys.stderr.isatty():
-        sys.__excepthook__(type, value, tb)
-    else:
-        import pdb, traceback
-        traceback.print_exception(type, value, tb)
-        print
-        pdb.pm()
+@app.route('/awspath')
+def lb_check():
+    return 'this is the index route'
 
 
-@slack.RTMClient.run_on(event='message')
-def handle_messages(**payload):
-    """
-    Does a lot. Fucking decorators.
-    1. if the message has react-able strings, react to the message appropriately
-    2. if the message starts with @botname and has a command i've planned for, do thing.
-    """
-    data = payload['data']
-    channel_id = data['channel']
-    thread_ts = data['ts']
-
-    LOGGER.debug(payload)
-
-    if not data['text'].startswith("MOONRITUAL"):
-        return
-    response = "🧞"
-
-    webclient = payload['web_client']
-    webclient.chat_postMessage(
-        channel=channel_id,
-        text=response,
-        timestamp=thread_ts
-    )
+@app.route('/')
+def index():
+    return 'this is garbage. you probably meant to hit a different url.'
 
 
-def main(*args, **kwargs):
-    parser = argparse.ArgumentParser(
-        description="The Dicussion Archiver")
-    parser.add_argument(
-        "--debug", "-d", action='store_true',
-        help="Include debugging output")
-    parser.add_argument("--verbose", "-v", action="store_true", help="Include verbose logs")
-    parser.add_argument(
-        "--api-token", "-t", required=True, help="Slack API token")
-    parsed = parser.parse_args()
-    if parsed.verbose or parsed.debug:
-        LOGGER.setLevel(logging.DEBUG)
-    if parsed.debug:
-        sys.excepthook = idb_excepthook
+@app.before_request
+def log_request_info():
+    app.logger.info('Headers: %s', request.headers)
+    app.logger.info('Body: %s', request.form.to_dict())
 
-    rtm_client = slack.RTMClient(token=parsed.api_token)
-    rtm_client.start()
+
+@app.route('/disarch/unroll', methods=['post'])
+def notify_slack_route():
+    post_json = request.form.to_dict(flat=False)
+    # this houses the json dict
+    convert_to_json = json.loads(post_json['payload'][0])
+    # this is the callback_id needed for later API calls
+    callback_id = convert_to_json.get('callback_id')
+    # this is the original message which can be modified for replacement
+    original_message = convert_to_json.get('original_message')
+    slack_attachments = [
+    {
+        "fallback": "buttons didn't work.",
+        "text": "BUTTONS.",
+        "attachment_type": "default",
+        "callback_id": 'non-unique',
+        "actions": [
+            {
+            "type": "button",
+            "text": "View investigation",
+            "url": 'https://me.jowj.net',
+            "style": "primary"
+            },
+            {
+            "type": "section",
+            "text": "BUTTONS."
+            }
+        ]
+        }
+    ]
+    # actually close the specified investigation.
+    original_message['attachments'] = slack_attachments
+    response = convert_to_json.get('original_message')
+    return(response)
 
 
 if __name__ == '__main__':
-    sys.exit(main(*sys.argv))
+    app.run(host='0.0.0.0', port='80', debug=True)
