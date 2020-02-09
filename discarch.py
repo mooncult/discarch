@@ -20,7 +20,8 @@ def log_request_info():
 
 @app.route('/discarch/mention', methods=['post'])
 def notify_slack_route():
-    response = request.form['challenge']
+    data = request.json()
+    response = data.challenge
     return(response)
 
 
