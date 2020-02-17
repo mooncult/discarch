@@ -19,6 +19,16 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 
+class SlackMessage():
+    def __init__(self, json_string):
+        self.team = json_string['team']
+        self.user_id = json_string['user']
+        self.parent_user = json_string['parent_user_id']
+        self.thread_ts = json_string['thread_ts']
+        self.ts = json_string['ts']
+        
+
+
 def prettyjson(obj):
     return json.dumps(obj, indent=2, sort_keys=True)
 
