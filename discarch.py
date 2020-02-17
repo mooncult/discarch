@@ -15,7 +15,7 @@ from flask import Flask
 from flask import request
 
 
-logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 
@@ -24,9 +24,9 @@ def prettyjson(obj):
 
 
 def inspect(title, something):
-    logging.debug("<{}> Type: {}".format(title, type(something)))
-    logging.debug("<{}> Dir: {}".format(title, dir(something)))
-    logging.debug("<{}> Value: {}".format(title, something))
+    logger.debug("<{}> Type: {}".format(title, type(something)))
+    logger.debug("<{}> Dir: {}".format(title, dir(something)))
+    logger.debug("<{}> Value: {}".format(title, something))
 
 
 @app.route('/')
@@ -44,17 +44,17 @@ def log_request_info():
 def notify_slack_route():
     inspect("req", request)
     inspect("path", request.path)
-    logging.debug("JSON object at request.json: {}".format(prettyjson(request.json)))
+    logger.debug("JSON object at request.json: {}".format(prettyjson(request.json)))
     if 'challenge' in request.json:
         return request.json['challenge']
     elif 'event' in request.json and request.json['event']['type'] == 'app_mention':
-        logging.debug("I think this is the event you get when you get app mentioned")
-        logging.debug(request.json['event']['text'])
+        logger.debug("I think this is the event you get when you get app mentioned")
+        logger.debug(request.json['event']['text'])
         if 'thread_ts' not in request.json['event']:
             msg = "Got my @ss @'d outside of a thread, no one cares lol"
-            logging.info(msg)
+            logger.info(msg)
             return msg
-        logging.debug("Trynna unroll thread with thread_ts: {}".format(
+        logger.debug("Trynna unroll thread with thread_ts: {}".format(
             request.json['event']['thread_ts']))
         convoreps = app.discarch_config['client'].conversations_replies(
             token=app.discarch_config['token'],
@@ -62,12 +62,12 @@ def notify_slack_route():
             ts=request.json['event']['thread_ts'])
         inspect("convoreps", convoreps)
         inspect("convoreps.data", convoreps.data)
-        logging.debug(prettyjson(convoreps.data))
+        logger.debug(prettyjson(convoreps.data))
         return "OK"
 
     msg = "Unhandled condition at path {}. Request data json: {}".format(
         request.path, prettyjson(request.json))
-    logging.debug(msg)
+    logger.debug(msg)
     return msg
 
 
@@ -79,7 +79,17 @@ def main(*args, **kwargs):
     parser.add_argument("--bindhost", "-b", default="0.0.0.0")
     parser.add_argument("--port", "-p", default="8080")
     parser.add_argument("--debug", "-d", action="store_true")
+    parser.add_argument("--logfile", "-l")
     parsed = parser.parse_args()
+    loglevel = logging.INFO
+    if parsed.debug:
+        loglevel = logging.DEBUG
+    logger.setLevel(loglevel)
+    if parsed.logfile:
+        fh = logging.FileHandler(parsed.logfile)
+        fh.setLevel(loglevel)
+        logger.addHandler(fh)
+    logger.debug("Configured logging, nice")
     if not parsed.token:
         raise Exception("You're going to need a token bruh")
     client = slack.WebClient(parsed.token)
