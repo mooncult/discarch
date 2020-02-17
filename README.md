@@ -178,3 +178,9 @@ DEBug:root:{
   "ok": true
 }
 ```
+
+## TODO
+
+[ ] Move `DATABASE` to args format
+	* don't require an env
+[ ] Inside `notify_slack_route():` take list of messages from slack api and actually write to db
