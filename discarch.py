@@ -6,27 +6,38 @@ import argparse
 import os
 import json
 import logging
-import pdb
 import sys
+import sqlite3
 
 import requests
 import slack
 from flask import Flask
 from flask import request
+from flask import g
 
-
+DATABASE = os.environ["SQL_DB_NAME"]
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 
-class SlackMessage():
-    def __init__(self, json_string):
-        self.team = json_string['team']
-        self.user_id = json_string['user']
-        self.parent_user = json_string['parent_user_id']
-        self.thread_ts = json_string['thread_ts']
-        self.ts = json_string['ts']
-        
+def get_db():
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = g._database = sqlite3.connect(DATABASE)
+    return db
+
+
+def init_db():
+    cur = get_db().cursor()
+    cur.execute('''CREATE TABLE messages
+    (thread_ts, message_ts, user, team, message_text)''')
+
+
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
 
 
 def prettyjson(obj):
@@ -70,6 +81,13 @@ def notify_slack_route():
             token=app.discarch_config['token'],
             channel=request.json['event']['channel'],
             ts=request.json['event']['thread_ts'])
+
+        cur = get_db().cursor()
+        for thing in convoreps:
+            """ if a message.ts exists in db do nothing. else, save it
+            """
+            pass
+        
         inspect("convoreps", convoreps)
         inspect("convoreps.data", convoreps.data)
         logger.debug(prettyjson(convoreps.data))
@@ -107,6 +125,7 @@ def main(*args, **kwargs):
         'token': parsed.token,
         'client': client,
     }
+    init_db()
     app.run(host=parsed.bindhost, port=parsed.port, debug=parsed.debug)
 
 
