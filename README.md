@@ -1,4 +1,4 @@
-n# The Discussion Archiver
+# The Discussion Archiver
 
 This bot will archive threads in Slack.
 Sort of like <https://threadreaderapp.com/> on Twitter.
