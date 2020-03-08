@@ -27,8 +27,8 @@ def get_db():
 
 def init_db():
     cur = get_db().cursor()
-    cur.execute('''CREATE TABLE messages
-    (thread_ts, message_ts, user, team, message_text)''')
+    # cur.execute('''CREATE TABLE messages
+    # (thread_ts, message_ts, user, team, message_text)''')
 
 
 @app.teardown_appcontext
