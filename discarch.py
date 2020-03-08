@@ -61,42 +61,78 @@ def log_request_info():
     app.logger.info('Body: %s', request.form.to_dict())
 
 
-@app.route('/discarch/mention', methods=['POST'])
-def notify_slack_route():
-    inspect("req", request)
-    inspect("path", request.path)
-    logger.debug("JSON object at request.json: {}".format(prettyjson(request.json)))
-    if 'challenge' in request.json:
-        return request.json['challenge']
-    elif 'event' in request.json and request.json['event']['type'] == 'app_mention':
-        logger.debug("I think this is the event you get when you get app mentioned")
-        logger.debug(request.json['event']['text'])
-        if 'thread_ts' not in request.json['event']:
-            msg = "Got my @ss @'d outside of a thread, no one cares lol"
-            logger.info(msg)
-            return msg
-        logger.debug("Trynna unroll thread with thread_ts: {}".format(
-            request.json['event']['thread_ts']))
-        convoreps = app.discarch_config['client'].conversations_replies(
-            token=app.discarch_config['token'],
-            channel=request.json['event']['channel'],
-            ts=request.json['event']['thread_ts'])
+def process_challenge(request):
+    """process a challenge from slack event subscription
+    expects a request object from flask
+    """
+    return request.json['challenge']
 
-        cur = get_db().cursor()
-        for thing in convoreps:
-            """ if a message.ts exists in db do nothing. else, save it
-            """
-            pass
-        
-        inspect("convoreps", convoreps)
-        inspect("convoreps.data", convoreps.data)
-        logger.debug(prettyjson(convoreps.data))
-        return "OK"
 
-    msg = "Unhandled condition at path {}. Request data json: {}".format(
-        request.path, prettyjson(request.json))
+def process_app_mention_event(request):
+    """process an app mention event from slack event sub
+    expects a request object from flask
+    """
+    logger.debug("I think this is the event you get when you get app mentioned")
+    logger.debug(request.json['event']['text'])
+
+    if 'thread_ts' not in request.json['event']:
+        msg = "Got my @ss @'d outside of a thread, no one cares lol"
+        logger.info(msg)
+        return msg
+
+    logger.debug("Trynna unroll thread with thread_ts: {}".format(
+        request.json['event']['thread_ts']))
+
+    convoreps = app.discarch_config['client'].conversations_replies(
+        token=app.discarch_config['token'],
+        channel=request.json['event']['channel'],
+        ts=request.json['event']['thread_ts'])
+
+    logger.debug(prettyjson(convoreps.data))
+
+    cur = get_db().cursor()
+    for thing in convoreps:
+        """ if a message.ts exists in db do nothing. else, save it
+        """
+        pass
+
+    return "OK"
+
+
+@app.route('/discarch', methods=['POST'])
+def discarch_main():
+    """the main function for the discarch route url
+    """
+    msg = f"i'm in discarch_main, and here's my shit: {request}"
+
+    try:
+        decoded = prettyjson(request.json)
+        msg += decoded
+    except Exception as e:
+        msg += f"we couldn't decode json because: {e}"
+
     logger.debug(msg)
-    return msg
+    processor = event_subscription_dispatcher(request)
+    return processor(request)
+
+
+def event_subscription_dispatcher(request):
+    """dispatch events from slack
+
+    given a request that (came from flask) return the appropriate action.
+    return something even if the conditions we don't care about aren't met 
+    due to flask requirements
+    """
+    logger.debug("JSON object at request.json: {}".format(prettyjson(request.json)))    
+    if 'challenge' in request.json:
+        return process_challenge
+    elif 'event' in request.json and request.json['event']['type'] == 'app_mention':
+        return process_app_mention_event
+    else:
+        msg = "Unhandled condition at path {}. Request data json: {}".format(
+            request.path, prettyjson(request.json))
+        logger.debug(msg)
+        return msg
 
 
 def main(*args, **kwargs):
