@@ -53,6 +53,20 @@ def index():
     return "success! the server is up."
 
 
+@app.route('/test')
+def discarch_test_route():
+    msg = f"i'm in discarch_main, and here's my shit: {request}"
+
+    try:
+        decoded = prettyjson(request.json)
+        msg += decoded
+    except Exception as e:
+        msg += f"we couldn't decode json because: {e}"
+
+    logger.debug(msg)
+    return msg
+
+
 @app.before_request
 def log_request_info():
     app.logger.info('Headers: %s', request.headers)
