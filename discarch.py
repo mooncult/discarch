@@ -160,8 +160,8 @@ def main(*args, **kwargs):
         'token': parsed.token,
         'client': client,
     }
-    init_db()
     app._discarch_dbpath = parsed.database
+    init_db()
     app.run(host=parsed.bindhost, port=parsed.port, debug=parsed.debug)
 
 
