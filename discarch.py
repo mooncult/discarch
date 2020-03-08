@@ -15,7 +15,6 @@ from flask import Flask
 from flask import request
 from flask import g
 
-DATABASE = os.environ["SQL_DB_NAME"]
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
@@ -23,7 +22,7 @@ app = Flask(__name__)
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
+        db = g._database = sqlite3.connect(g._discarch_dbpath)
     return db
 
 
@@ -140,6 +139,7 @@ def main(*args, **kwargs):
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--token", "-t", default=os.environ.get('SLACK_BOT_TOKEN'))
+    parser.add_argument("--database", "-db", default=os.environ.get('SQL_DB_NAME'))
     parser.add_argument("--bindhost", "-b", default="0.0.0.0")
     parser.add_argument("--port", "-p", default="8080")
     parser.add_argument("--debug", "-d", action="store_true")
@@ -162,6 +162,7 @@ def main(*args, **kwargs):
         'client': client,
     }
     init_db()
+    g._discarch_dbpath = parsed.database
     app.run(host=parsed.bindhost, port=parsed.port, debug=parsed.debug)
 
 
