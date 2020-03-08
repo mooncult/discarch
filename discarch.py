@@ -53,7 +53,7 @@ def index():
     return "success! the server is up."
 
 
-@app.route('/test')
+@app.route('/test', methods=['POST'])
 def discarch_test_route():
     msg = f"i'm in discarch_main, and here's my shit: {request}"
 
