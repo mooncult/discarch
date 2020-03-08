@@ -22,7 +22,7 @@ app = Flask(__name__)
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(g._discarch_dbpath)
+        db = app._discarch_database = sqlite3.connect(app._discarch_dbpath)
     return db
 
 
@@ -162,7 +162,7 @@ def main(*args, **kwargs):
         'client': client,
     }
     init_db()
-    g._discarch_dbpath = parsed.database
+    app._discarch_dbpath = parsed.database
     app.run(host=parsed.bindhost, port=parsed.port, debug=parsed.debug)
 
 
