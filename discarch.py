@@ -57,7 +57,8 @@ def index():
 def log_request_info():
     app.logger.info('Headers: %s', request.headers)
     app.logger.info('Body: %s', request.form.to_dict())
-
+    logger.debug('Headers: %s', request.headers)
+    logger.debug('Body: %s', request.form.to_dict())
 
 def process_challenge(request):
     """process a challenge from slack event subscription
@@ -151,6 +152,7 @@ def main(*args, **kwargs):
     if parsed.logfile:
         fh = logging.FileHandler(parsed.logfile)
         fh.setLevel(loglevel)
+        fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
         logger.addHandler(fh)
     logger.debug("Configured logging, nice")
     if not parsed.token:
