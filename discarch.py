@@ -26,9 +26,14 @@ def get_db():
 
 
 def init_db():
+    """Create a new DB if one doesn't exist.
+    don't do anything if result is None because the table already exists! nice.
+    """
     cur = get_db().cursor()
-    # cur.execute('''CREATE TABLE messages
-    # (thread_ts, message_ts, user, team, message_text)''')
+    result = cur.fetchone('''SELECT name FROM sqlite_master WHERE type='table' AND name='messages' ''')
+    if result is None:
+        cur.execute('''CREATE TABLE messages
+        (thread_ts, message_ts, user, team, message_text)''')
 
 
 @app.teardown_appcontext
