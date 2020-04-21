@@ -31,6 +31,9 @@ you will get an exception with a message like
 
 ## TODO
 
-* [ ] Move `DATABASE` to args format
-	* don't require an env
+* [x] Move `DATABASE` to args format
+	* don't require an env but use it as a default
 * [ ] Inside `notify_slack_route():` take list of messages from slack api and actually write to db
+* [ ] fix `init_db`
+  * test if the db exists, don't shit on any old data we have
+  * if it does, load it, if it doesn't, init new.
