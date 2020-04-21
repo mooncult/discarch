@@ -30,7 +30,8 @@ def init_db():
     don't do anything if result is None because the table already exists! nice.
     """
     cur = get_db().cursor()
-    result = cur.fetchone('''SELECT name FROM sqlite_master WHERE type='table' AND name='messages' ''')
+    cur.execute('''SELECT name FROM sqlite_master WHERE type='table' AND name='messages' ''')
+    result = cur.fetchone()
     if result is None:
         cur.execute('''CREATE TABLE messages
         (thread_ts, message_ts, user, team, message_text)''')
